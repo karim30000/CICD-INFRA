@@ -39,6 +39,7 @@ jobs:
           name: installing asnible
           command: |
             apk add --update ansible
+            ansible --version
       - run:
           name: run ansible-playbook
           command: |
