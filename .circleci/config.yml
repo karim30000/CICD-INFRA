@@ -16,13 +16,9 @@ jobs:
       - run:
           name: send the ip to the inventory
           command: |
-            aws ec2 describe-instances \
-            \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=Bastion-EC2" \
-              --output text >> inventory.txt
-      - run: cat ~/inventory.txt
-
+            sh ./get-ip.sh
+            cat inventory.txt
+              
   configure-infra:
     docker:
       - image: python:3.7-alpine3.11
@@ -30,7 +26,6 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["d5:35:24:ab:6c:22:9e:66:48:16:7e:dd:46:41:7d:59"]
-      - run: cat ~/inventory.txt
       - run:
           name: installing asnible
           command: |
