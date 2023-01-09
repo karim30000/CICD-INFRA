@@ -1,0 +1,78 @@
+version: 2.1
+
+commands:
+  print_pipeline_id:
+    steps:
+      - run: echo ${CIRCLE_WORKFLOW_ID}
+
+jobs:
+
+  print-hello:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run: echo "Hello"
+
+  print-world:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run: echo "World!"
+
+  print-MyName:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run: echo $Say_My_Name
+
+  save_hello_world_output:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run: echo "Hello World!" > ~/output.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output.txt
+
+  print_output_file:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/output.txt
+
+  reusable_jobs:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - print_pipeline_id
+
+  nonZero_whenFail_job:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run: exit 1
+      - run:
+          name: when errors
+          command: echo "Hello Error!"
+          when: on_fail
+
+workflows:
+
+  first-workflow:
+    jobs:
+      - print-hello
+      - print-world:
+          requires:
+            - print-hello
+      - print-MyName:
+          requires:
+            - print-world
+      - save_hello_world_output
+      - print_output_file:
+          requires:
+            - save_hello_world_output
+      - reusable_jobs
+      - nonZero_whenFail_job
