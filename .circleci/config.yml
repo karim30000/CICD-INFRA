@@ -18,9 +18,13 @@ jobs:
           command: |
             aws ec2 describe-instances \
             \
-            --query 'Reservations[].Instances[].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=Bastion-EC2" \
-            --output text >> inventory.txt
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=Bastion-EC2" \
+              --output text >> inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - inventory.txt
 
   configure-infra:
     docker:
@@ -29,6 +33,9 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["d5:35:24:ab:6c:22:9e:66:48:16:7e:dd:46:41:7d:59"]
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/inventory.txt
       - run:
           name: installing asnible
           command: |
