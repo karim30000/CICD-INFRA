@@ -13,10 +13,38 @@ jobs:
             aws cloudformation deploy \
             --template-file ec2.yml \
             --stack-name CICD
+      - run:
+          name: send the ip to the inventory
+          command: |
+            aws ec2 describe-instances \
+            \
+            --query 'Reservations[].Instances[].PublicIpAddress' \
+            --filters "Name=tag:Name,Values=Bastion-EC2" \
+            --output text >> inventory.txt
+
+  configure-infra:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["d5:35:24:ab:6c:22:9e:66:48:16:7e:dd:46:41:7d:59"]
+      - run:
+          name: installing asnible
+          command: |
+            apk add --update ansible
+      - run:
+          name: run ansible-playbook
+          command: |
+            ansible-playbook -i inventory.txt cicd_playbook.yml
+
 
 workflows:
 
   Infra-workflow:
     jobs:
       - create-infra
+      - configure-infra:
+          requires:
+            - create-infra
       
