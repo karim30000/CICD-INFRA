@@ -1,0 +1,44 @@
+Description: create ec2 && it's SG
+
+Resources:
+
+  BastionEc2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: 'ami-0b93ce03dcbcb10f6'
+      InstanceType: t3.micro
+      KeyName: test
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: "true"
+        DeviceIndex: "0"
+        SubnetId: 'subnet-0d25d6f6b61ae8c14'
+        GroupSet: 
+          - Ref: "BastionSG"
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt-get update -qq
+          apt-get install  openssh-server -qq
+          service ssh start
+      Tags:
+        - Key: Name
+          Value: "Bastion-EC2"
+  
+  BastionSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: allows ssh from everywhere
+      VpcId: 'vpc-0002433451ab2f3d2'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "BastionSG"
