@@ -22,7 +22,7 @@ jobs:
       - save_cache:
           paths:
             - inventory.txt
-          key: ec2-ips
+          key: ec2-ip
               
   configure-infra:
     docker:
@@ -33,7 +33,7 @@ jobs:
           fingerprints: ["d5:35:24:ab:6c:22:9e:66:48:16:7e:dd:46:41:7d:59"]
       - restore_cache:
           keys:
-            - ec2-ips
+            - ec2-ip
       - run: cat inventory.txt
       - run:
           name: installing asnible
