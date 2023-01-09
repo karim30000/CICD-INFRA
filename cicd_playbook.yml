@@ -1,8 +1,9 @@
 - name: CICD
   hosts: all
   remote_user: ubuntu
-  become: yes
+  become: true
   become_method: sudo
   become_user: root
+  gather_facts: true
   roles:
    - setup 
